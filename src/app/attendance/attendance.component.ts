@@ -173,7 +173,4 @@ export class AttendanceComponent implements OnInit {
     }
   }
 
-  isBackendAvailable(): boolean {
-    return this.attendanceService.isBackendAvailable();
-  }
 }
