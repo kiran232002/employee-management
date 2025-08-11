@@ -61,8 +61,15 @@ export class LeaveService {
   getLeavesByEmployee(employeeId: number): Observable<LeaveRequest[]> {
     const employeeLeaves = this.mockLeaveRequests.filter(leave => leave.employeeId === employeeId);
     console.log(`Loaded ${employeeLeaves.length} leave requests for employee ${employeeId}`);
-    
-    return of(employeeLeaves).pipe(delay(300));
+
+    return of(employeeLeaves.map(leave => ({
+      id: leave.id,
+      startDate: leave.startDate,
+      endDate: leave.endDate,
+      reason: leave.reason,
+      status: leave.status,
+      employee: leave.employee
+    }))).pipe(delay(300));
   }
 
   getAllLeaveRequests(): Observable<LeaveRequest[]> {
