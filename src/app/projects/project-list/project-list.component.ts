@@ -100,8 +100,11 @@ export class ProjectListComponent implements OnInit {
         this.assignments = data;
       },
       error => {
-        console.error('Error loading assignments:', error);
-        console.error('Assignment error details:', JSON.stringify(error, null, 2));
+        console.error('Error loading assignments:', {
+          message: error.message || 'Unknown error',
+          status: error.status || 'No status',
+          url: error.url || 'No URL'
+        });
         // Set empty array as fallback
         this.assignments = [];
       }

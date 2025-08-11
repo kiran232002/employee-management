@@ -61,8 +61,11 @@ export class AttendanceComponent implements OnInit {
           this.loading = false;
         },
         error => {
-          console.error('Error loading attendance records:', error);
-          console.error('Error details:', JSON.stringify(error, null, 2));
+          console.error('Error loading attendance records:', {
+            message: error.message || 'Unknown error',
+            status: error.status || 'No status',
+            url: error.url || 'No URL'
+          });
           this.attendanceRecords = []; // Set empty array if backend is not available
           this.loading = false;
         }
@@ -77,8 +80,11 @@ export class AttendanceComponent implements OnInit {
           this.attendanceCount = data;
         },
         error => {
-          console.error('Error loading attendance count:', error);
-          console.error('Error details:', JSON.stringify(error, null, 2));
+          console.error('Error loading attendance count:', {
+            message: error.message || 'Unknown error',
+            status: error.status || 'No status',
+            url: error.url || 'No URL'
+          });
           // Set default values if backend is not available
           this.attendanceCount = { presentCount: 0, absentCount: 0, totalCount: 0 };
         }

@@ -133,8 +133,11 @@ export class ProfileComponent implements OnInit {
           this.attendanceCount = count;
         },
         error => {
-          console.error('Error loading attendance count:', error);
-          console.error('Error details:', JSON.stringify(error, null, 2));
+          console.error('Error loading attendance count:', {
+            message: error.message || 'Unknown error',
+            status: error.status || 'No status',
+            url: error.url || 'No URL'
+          });
           // Set default values if backend is not available
           this.attendanceCount = { presentCount: 0, absentCount: 0, totalCount: 0 };
         }
