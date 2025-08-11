@@ -7,7 +7,7 @@ import { LeaveRequest } from '../models/employee.model';
   providedIn: 'root'
 })
 export class LeaveService {
-  private mockLeaveRequests: LeaveRequest[] = [
+  private mockLeaveRequests: (LeaveRequest & { employeeId: number })[] = [
     {
       id: 1,
       employeeId: 65,
@@ -15,7 +15,7 @@ export class LeaveService {
       endDate: '2024-03-17',
       reason: 'Family vacation',
       status: 'Approved',
-      appliedDate: '2024-03-01'
+      employee: { id: 65, name: 'John Doe', email: 'john@example.com', designation: 'Developer', department: 'IT', joiningDate: '2023-01-01', isAvailable: true, skills: 'Angular, TypeScript' }
     },
     {
       id: 2,
@@ -24,7 +24,7 @@ export class LeaveService {
       endDate: '2024-04-12',
       reason: 'Medical appointment',
       status: 'Pending',
-      appliedDate: '2024-04-05'
+      employee: { id: 65, name: 'John Doe', email: 'john@example.com', designation: 'Developer', department: 'IT', joiningDate: '2023-01-01', isAvailable: true, skills: 'Angular, TypeScript' }
     },
     {
       id: 3,
@@ -33,7 +33,7 @@ export class LeaveService {
       endDate: '2024-03-22',
       reason: 'Personal work',
       status: 'Rejected',
-      appliedDate: '2024-03-10'
+      employee: { id: 66, name: 'Jane Smith', email: 'jane@example.com', designation: 'Developer', department: 'IT', joiningDate: '2023-02-01', isAvailable: true, skills: 'React, JavaScript' }
     }
   ];
 
