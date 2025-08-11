@@ -120,8 +120,6 @@ export class ProfileComponent implements OnInit {
         },
         error => {
           console.error('Error loading leave requests:', error);
-          console.error('Error details:', JSON.stringify(error, null, 2));
-          // Set empty array if backend is not available
           this.leaveRequests = [];
         }
       );
@@ -181,14 +179,7 @@ export class ProfileComponent implements OnInit {
         },
         error => {
           console.error('Error applying for leave:', error);
-          console.error('Error details:', JSON.stringify(error, null, 2));
-          let errorMessage = 'Error submitting leave application. Please try again.';
-          if (error.status === 0) {
-            errorMessage = 'Cannot connect to server. Please check if the backend is running.';
-          } else if (error.error && error.error.message) {
-            errorMessage = error.error.message;
-          }
-          alert(errorMessage);
+          alert('Error submitting leave application. Please try again.');
         }
       );
     }
