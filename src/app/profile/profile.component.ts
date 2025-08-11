@@ -215,4 +215,8 @@ export class ProfileComponent implements OnInit {
       default: return '';
     }
   }
+
+  isBackendAvailable(): boolean {
+    return this.leaveService.isBackendAvailable();
+  }
 }

@@ -27,6 +27,10 @@ export class LeaveManagementComponent implements OnInit {
     }
   }
 
+  isBackendAvailable(): boolean {
+    return this.leaveService.isBackendAvailable();
+  }
+
   canManageLeaves(): boolean {
     return this.userRole === 'MANAGER';
   }
