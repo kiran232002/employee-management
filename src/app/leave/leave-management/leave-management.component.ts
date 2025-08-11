@@ -40,14 +40,9 @@ export class LeaveManagementComponent implements OnInit {
       },
       error => {
         console.error('Error loading leave requests:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
-        this.allLeaveRequests = []; // Set empty array if backend is not available
+        this.allLeaveRequests = [];
         this.loading = false;
-
-        // Show user-friendly message
-        if (error.status === 0) {
-          alert('Cannot connect to server. Please check if the backend is running.');
-        }
+        alert('Error loading leave requests. Please try again.');
       }
     );
   }
