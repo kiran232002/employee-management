@@ -12,10 +12,12 @@ import { AttendanceRecord, AttendanceCount } from '../models/employee.model';
 export class AttendanceComponent implements OnInit {
   attendanceForm: FormGroup;
   attendanceRecords: AttendanceRecord[] = [];
+  allAttendanceReports: AttendanceRecord[] = [];
   attendanceCount: AttendanceCount = { presentCount: 0, absentCount: 0, totalCount: 0 };
   userRole = '';
   currentUser: any;
   loading = false;
+  selectedDate: string = new Date().toISOString().split('T')[0];
 
   constructor(
     private fb: FormBuilder,
@@ -34,10 +36,13 @@ export class AttendanceComponent implements OnInit {
   }
 
   ngOnInit() {
-    // Only load attendance data for actual employees (DEVELOPER role)
-    if (this.currentUser?.employeeId && this.currentUser.role === 'DEVELOPER') {
+    if (this.currentUser?.role === 'DEVELOPER' && this.currentUser?.employeeId) {
+      // Load personal attendance for developers
       this.loadAttendanceRecords();
       this.loadAttendanceCount();
+    } else if (this.currentUser?.role === 'MANAGER') {
+      // Load all employee attendance reports for managers
+      this.loadAllAttendanceReports();
     }
   }
 
@@ -123,5 +128,48 @@ export class AttendanceComponent implements OnInit {
 
   getStatusClass(status: string): string {
     return status.toLowerCase() === 'present' ? 'status-present' : 'status-absent';
+  }
+
+  canViewAllReports(): boolean {
+    return this.userRole === 'MANAGER';
+  }
+
+  loadAllAttendanceReports() {
+    this.loading = true;
+    this.attendanceService.getAllAttendanceReports().subscribe(
+      data => {
+        this.allAttendanceReports = data.sort((a, b) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime()
+        );
+        this.loading = false;
+      },
+      error => {
+        console.error('Error loading attendance reports:', error);
+        this.allAttendanceReports = [];
+        this.loading = false;
+        if (error.status === 0) {
+          alert('Cannot connect to server. Please check if the backend is running.');
+        }
+      }
+    );
+  }
+
+  filterByDate() {
+    if (this.selectedDate) {
+      this.loading = true;
+      this.attendanceService.getAttendanceReportsByDate(this.selectedDate).subscribe(
+        data => {
+          this.allAttendanceReports = data;
+          this.loading = false;
+        },
+        error => {
+          console.error('Error loading attendance reports by date:', error);
+          this.allAttendanceReports = [];
+          this.loading = false;
+        }
+      );
+    } else {
+      this.loadAllAttendanceReports();
+    }
   }
 }
