@@ -45,20 +45,7 @@ export class ProjectService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    console.error('Project Service Error Details:', {
-      status: error.status,
-      statusText: error.statusText,
-      url: error.url,
-      message: error.message,
-      error: error.error
-    });
-
-    if (error.status === 0) {
-      console.warn('🔄 Backend not available (connection failed) - Project service');
-    } else {
-      console.error(`Backend returned code ${error.status} (${error.statusText}), URL: ${error.url}`);
-      console.error('Response body:', error.error);
-    }
+    SafeErrorLogger.logHttpError('Project Service API Error', error);
     return throwError(error);
   }
 }
