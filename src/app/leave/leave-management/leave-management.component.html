@@ -1,6 +1,9 @@
 <div class="leave-management-container">
   <div class="page-header">
     <h2>Leave Management</h2>
+    <div *ngIf="!isBackendAvailable()" class="backend-status-warning">
+      ⚠️ Using demo data - Database not connected
+    </div>
   </div>
 
   <div *ngIf="!canManageLeaves()" class="access-denied">
