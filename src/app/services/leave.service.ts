@@ -1,119 +1,52 @@
 import { Injectable } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
-import { delay } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { LeaveRequest } from '../models/employee.model';
-import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LeaveService {
-  private mockLeaveRequests: (LeaveRequest & { employeeId: number })[] = [
-    {
-      id: 1,
-      employeeId: 65,
-      startDate: '2024-03-15',
-      endDate: '2024-03-17',
-      reason: 'Family vacation',
-      status: 'APPROVED',
-      employee: { id: 65, name: 'John Doe', email: 'john@example.com', designation: 'Senior Developer', department: 'IT', joiningDate: '2023-01-01', isAvailable: true, skills: 'Angular, TypeScript' }
-    },
-    {
-      id: 2,
-      employeeId: 65,
-      startDate: '2024-04-10',
-      endDate: '2024-04-12',
-      reason: 'Medical appointment',
-      status: 'PENDING',
-      employee: { id: 65, name: 'John Doe', email: 'john@example.com', designation: 'Senior Developer', department: 'IT', joiningDate: '2023-01-01', isAvailable: true, skills: 'Angular, TypeScript' }
-    },
-    {
-      id: 3,
-      employeeId: 66,
-      startDate: '2024-03-20',
-      endDate: '2024-03-22',
-      reason: 'Personal work',
-      status: 'REJECTED',
-      employee: { id: 66, name: 'Jane Smith', email: 'jane@example.com', designation: 'Frontend Developer', department: 'IT', joiningDate: '2023-02-01', isAvailable: true, skills: 'React, JavaScript' }
-    },
-    {
-      id: 4,
-      employeeId: 67,
-      startDate: '2024-05-01',
-      endDate: '2024-05-03',
-      reason: 'Wedding ceremony',
-      status: 'PENDING',
-      employee: { id: 67, name: 'Mike Johnson', email: 'mike@example.com', designation: 'Backend Developer', department: 'IT', joiningDate: '2023-03-01', isAvailable: true, skills: 'Node.js, Python' }
-    }
-  ];
+  private baseUrl = 'http://localhost:8080/api/leaves';
 
-  private nextId = 4;
-
-  constructor(private authService: AuthService) {}
+  constructor(private http: HttpClient) {}
 
   applyLeave(employeeId: number, leaveRequest: Partial<LeaveRequest>): Observable<LeaveRequest> {
-    const currentUser = this.authService.getCurrentUser();
-    const newLeaveRequest = {
-      id: this.nextId++,
+    const leaveData = {
       employeeId: employeeId,
-      startDate: leaveRequest.startDate || '',
-      endDate: leaveRequest.endDate || '',
-      reason: leaveRequest.reason || '',
-      status: 'PENDING',
-      employee: {
-        id: employeeId,
-        name: currentUser?.name || 'Unknown User',
-        email: currentUser?.email || 'unknown@example.com',
-        designation: 'Developer',
-        department: 'IT',
-        joiningDate: '2023-01-01',
-        isAvailable: true,
-        skills: 'Angular, TypeScript'
-      }
+      startDate: leaveRequest.startDate,
+      endDate: leaveRequest.endDate,
+      reason: leaveRequest.reason,
+      status: 'PENDING'
     };
-
-    this.mockLeaveRequests.push(newLeaveRequest);
-    console.log('Leave application submitted successfully!', newLeaveRequest);
-
-    return of(newLeaveRequest).pipe(delay(500));
+    
+    return this.http.post<LeaveRequest>(`${this.baseUrl}/apply/${employeeId}`, leaveData)
+      .pipe(catchError(this.handleError));
   }
 
   getLeavesByEmployee(employeeId: number): Observable<LeaveRequest[]> {
-    const employeeLeaves = this.mockLeaveRequests.filter(leave => leave.employeeId === employeeId);
-    console.log(`Loaded ${employeeLeaves.length} leave requests for employee ${employeeId}`);
-
-    return of(employeeLeaves.map(leave => ({
-      id: leave.id,
-      startDate: leave.startDate,
-      endDate: leave.endDate,
-      reason: leave.reason,
-      status: leave.status,
-      employee: leave.employee
-    }))).pipe(delay(300));
+    return this.http.get<LeaveRequest[]>(`${this.baseUrl}/employee/${employeeId}`)
+      .pipe(catchError(this.handleError));
   }
 
   getAllLeaveRequests(): Observable<LeaveRequest[]> {
-    console.log(`Loaded ${this.mockLeaveRequests.length} total leave requests`);
-    return of(this.mockLeaveRequests.map(leave => ({
-      id: leave.id,
-      startDate: leave.startDate,
-      endDate: leave.endDate,
-      reason: leave.reason,
-      status: leave.status,
-      employee: leave.employee
-    }))).pipe(delay(300));
+    return this.http.get<LeaveRequest[]>(`${this.baseUrl}/all`)
+      .pipe(catchError(this.handleError));
   }
 
   updateLeaveStatus(leaveId: number, status: string): Observable<boolean> {
-    const leaveIndex = this.mockLeaveRequests.findIndex(leave => leave.id === leaveId);
+    return this.http.put<boolean>(`${this.baseUrl}/update-status/${leaveId}`, { status: status })
+      .pipe(catchError(this.handleError));
+  }
 
-    if (leaveIndex !== -1) {
-      this.mockLeaveRequests[leaveIndex].status = status.toUpperCase();
-      console.log(`Leave request ${leaveId} status updated to ${status.toUpperCase()}`);
-      return of(true).pipe(delay(500));
+  private handleError(error: HttpErrorResponse) {
+    console.error('Leave Service Error:', error);
+    if (error.status === 0) {
+      console.error('Client-side error or network issue:', error.error);
     } else {
-      console.error(`Leave request ${leaveId} not found`);
-      return of(false).pipe(delay(500));
+      console.error(`Backend returned code ${error.status}, body was:`, error.error);
     }
+    return throwError(error);
   }
 }
