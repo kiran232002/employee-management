@@ -5,6 +5,7 @@ import { EmployeeService } from '../../services/employee.service';
 import { AttendanceService } from '../../services/attendance.service';
 import { AuthService } from '../../services/auth.service';
 import { Project, Employee, ProjectAssignment } from '../../models/employee.model';
+import { SafeErrorLogger } from '../../utils/safe-error-logger';
 
 @Component({
   selector: 'app-project-list',
@@ -100,11 +101,7 @@ export class ProjectListComponent implements OnInit {
         this.assignments = data;
       },
       error => {
-        console.error('Error loading assignments:', {
-          message: error.message || 'Unknown error',
-          status: error.status || 'No status',
-          url: error.url || 'No URL'
-        });
+        SafeErrorLogger.logHttpError('Loading project assignments', error);
         // Set empty array as fallback
         this.assignments = [];
       }

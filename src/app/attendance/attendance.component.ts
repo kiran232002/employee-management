@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AttendanceService } from '../services/attendance.service';
 import { AuthService } from '../services/auth.service';
 import { AttendanceRecord, AttendanceCount } from '../models/employee.model';
+import { SafeErrorLogger } from '../utils/safe-error-logger';
 
 @Component({
   selector: 'app-attendance',
@@ -61,11 +62,7 @@ export class AttendanceComponent implements OnInit {
           this.loading = false;
         },
         error => {
-          console.error('Error loading attendance records:', {
-            message: error.message || 'Unknown error',
-            status: error.status || 'No status',
-            url: error.url || 'No URL'
-          });
+          SafeErrorLogger.logHttpError('Loading attendance records', error);
           this.attendanceRecords = []; // Set empty array if backend is not available
           this.loading = false;
         }
@@ -80,11 +77,7 @@ export class AttendanceComponent implements OnInit {
           this.attendanceCount = data;
         },
         error => {
-          console.error('Error loading attendance count:', {
-            message: error.message || 'Unknown error',
-            status: error.status || 'No status',
-            url: error.url || 'No URL'
-          });
+          SafeErrorLogger.logHttpError('Loading attendance count', error);
           // Set default values if backend is not available
           this.attendanceCount = { presentCount: 0, absentCount: 0, totalCount: 0 };
         }

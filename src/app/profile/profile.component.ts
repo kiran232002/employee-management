@@ -6,6 +6,7 @@ import { ProjectService } from '../services/project.service';
 import { LeaveService } from '../services/leave.service';
 import { AttendanceService } from '../services/attendance.service';
 import { Employee, User, Project, LeaveRequest, AttendanceCount } from '../models/employee.model';
+import { SafeErrorLogger } from '../utils/safe-error-logger';
 
 @Component({
   selector: 'app-profile',
@@ -133,11 +134,7 @@ export class ProfileComponent implements OnInit {
           this.attendanceCount = count;
         },
         error => {
-          console.error('Error loading attendance count:', {
-            message: error.message || 'Unknown error',
-            status: error.status || 'No status',
-            url: error.url || 'No URL'
-          });
+          SafeErrorLogger.logHttpError('Loading attendance count in profile', error);
           // Set default values if backend is not available
           this.attendanceCount = { presentCount: 0, absentCount: 0, totalCount: 0 };
         }
