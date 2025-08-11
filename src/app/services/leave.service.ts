@@ -106,10 +106,10 @@ export class LeaveService {
 
   updateLeaveStatus(leaveId: number, status: string): Observable<boolean> {
     const leaveIndex = this.mockLeaveRequests.findIndex(leave => leave.id === leaveId);
-    
+
     if (leaveIndex !== -1) {
-      this.mockLeaveRequests[leaveIndex].status = status;
-      console.log(`Leave request ${leaveId} status updated to ${status}`);
+      this.mockLeaveRequests[leaveIndex].status = status.toUpperCase();
+      console.log(`Leave request ${leaveId} status updated to ${status.toUpperCase()}`);
       return of(true).pipe(delay(500));
     } else {
       console.error(`Leave request ${leaveId} not found`);
