@@ -1,0 +1,119 @@
+<div class="attendance-container">
+  <div class="page-header">
+    <h2>Attendance Management</h2>
+  </div>
+
+  <!-- Access Denied for Admin -->
+  <div *ngIf="userRole === 'ADMIN'" class="access-denied">
+    <h3>Access Denied</h3>
+    <p>Attendance page is not accessible for Admin users.</p>
+    <p>Please contact your system administrator for any attendance-related queries.</p>
+  </div>
+
+  <div *ngIf="userRole !== 'ADMIN'"class="attendance-content">
+
+  <!-- Attendance Stats -->
+  <div class="attendance-stats">
+    <div class="stat-card present">
+      <h3>{{attendanceCount.presentCount}}</h3>
+      <p>Present Days</p>
+    </div>
+    <div class="stat-card absent">
+      <h3>{{attendanceCount.absentCount}}</h3>
+      <p>Absent Days</p>
+    </div>
+    <div class="stat-card total">
+      <h3>{{attendanceCount.totalCount || (attendanceCount.presentCount + attendanceCount.absentCount)}}</h3>
+      <p>Total Days</p>
+    </div>
+  </div>
+
+  <!-- Mark Attendance Form (Developer only) -->
+  <div *ngIf="canMarkAttendance()" class="attendance-form-section">
+    <div class="section-header">
+      <h3>Mark Today's Attendance</h3>
+    </div>
+    
+    <form [formGroup]="attendanceForm" (ngSubmit)="markAttendance()" class="attendance-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" formControlName="date" class="form-control" />
+        </div>
+        
+        <div class="form-group">
+          <label>Status *</label>
+          <select formControlName="status" class="form-control">
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-row" *ngIf="attendanceForm.get('status')?.value === 'Present'">
+        <div class="form-group">
+          <label>Check-in Time</label>
+          <input type="time" formControlName="checkInTime" class="form-control" />
+        </div>
+        
+        <div class="form-group">
+          <label>Check-out Time</label>
+          <input type="time" formControlName="checkOutTime" class="form-control" />
+        </div>
+      </div>
+      
+      <button type="submit" class="btn btn-primary" [disabled]="attendanceForm.invalid">
+        Mark Attendance
+      </button>
+    </form>
+  </div>
+
+  <!-- Access message for non-developers -->
+  <div *ngIf="!canMarkAttendance()" class="access-info">
+    <div class="info-card">
+      <h3>Attendance Overview</h3>
+      <p>You can view your attendance summary above. Only developers can mark their own attendance.</p>
+      <p>For attendance-related queries, please contact your manager or HR department.</p>
+    </div>
+  </div>
+
+  <!-- Attendance History -->
+  <div class="attendance-history">
+    <div class="section-header">
+      <h3>Attendance History</h3>
+    </div>
+    
+    <div *ngIf="loading" class="loading">Loading attendance records...</div>
+    
+    <div *ngIf="!loading && attendanceRecords.length === 0" class="no-data">
+      No attendance records found.
+    </div>
+    
+    <div *ngIf="!loading && attendanceRecords.length > 0" class="records-table">
+      <table class="attendance-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Check-in Time</th>
+            <th>Check-out Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of attendanceRecords">
+            <td>{{record.date | date}}</td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(record.status)">
+                {{record.status}}
+              </span>
+            </td>
+            <td>{{record.checkInTime || '-'}}</td>
+            <td>{{record.checkOutTime || '-'}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  </div> <!-- Close attendance-content -->
+</div>

@@ -1,0 +1,186 @@
+<div class="profile-container">
+  <div class="profile-header">
+    <h2>My Profile</h2>
+    <p>Welcome, {{currentUser?.name}} ({{currentUser?.role}})</p>
+  </div>
+
+  <!-- Employee Information -->
+  <div class="profile-section">
+    <div class="section-header">
+      <h3>Personal Information</h3>
+      <button class="btn btn-secondary" (click)="showEditProfile = !showEditProfile">
+        {{showEditProfile ? 'Cancel' : 'Edit Profile'}}
+      </button>
+    </div>
+
+    <div *ngIf="!showEditProfile && employee" class="info-display">
+      <div class="info-grid">
+        <div class="info-item">
+          <label>Name:</label>
+          <span>{{employee.name}}</span>
+        </div>
+        <div class="info-item">
+          <label>Email:</label>
+          <span>{{employee.email}}</span>
+        </div>
+        <div class="info-item">
+          <label>Designation:</label>
+          <span>{{employee.designation}}</span>
+        </div>
+        <div class="info-item">
+          <label>Department:</label>
+          <span>{{employee.department}}</span>
+        </div>
+        <div class="info-item">
+          <label>Joining Date:</label>
+          <span>{{employee.joiningDate | date}}</span>
+        </div>
+        <div class="info-item">
+          <label>Skills:</label>
+          <span>{{employee.skills}}</span>
+        </div>
+        <div class="info-item">
+          <label>Current Project:</label>
+          <span>{{employee.project?.name || 'Not Assigned'}}</span>
+        </div>
+      </div>
+    </div>
+
+    <form *ngIf="showEditProfile" [formGroup]="profileForm" (ngSubmit)="updateProfile()" class="profile-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Name *</label>
+          <input type="text" formControlName="name" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" formControlName="email" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Designation *</label>
+          <input type="text" formControlName="designation" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Department *</label>
+          <input type="text" formControlName="department" class="form-control" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Skills *</label>
+        <textarea formControlName="skills" class="form-control" rows="3"></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="showEditProfile = false">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="profileForm.invalid">Update Profile</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Attendance Section (Developer only) -->
+  <div *ngIf="canFillAttendance() && currentUser?.role === 'DEVELOPER'" class="profile-section">
+    <div class="section-header">
+      <h3>My Attendance</h3>
+      <button class="btn btn-primary" (click)="showAttendanceForm = !showAttendanceForm">
+        {{showAttendanceForm ? 'Cancel' : 'Mark Attendance'}}
+      </button>
+    </div>
+
+    <div class="attendance-stats">
+      <div class="stat-card present">
+        <h4>{{attendanceCount.presentCount}}</h4>
+        <p>Present Days</p>
+      </div>
+      <div class="stat-card absent">
+        <h4>{{attendanceCount.absentCount}}</h4>
+        <p>Absent Days</p>
+      </div>
+    </div>
+
+    <form *ngIf="showAttendanceForm" [formGroup]="attendanceForm" (ngSubmit)="markAttendance()" class="attendance-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Date *</label>
+          <input type="date" formControlName="date" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>Status *</label>
+          <select formControlName="status" class="form-control">
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+          </select>
+        </div>
+        <div class="form-group" *ngIf="attendanceForm.get('status')?.value === 'Present'">
+          <label>Check-in Time</label>
+          <input type="time" formControlName="checkInTime" class="form-control" />
+        </div>
+        <div class="form-group" *ngIf="attendanceForm.get('status')?.value === 'Present'">
+          <label>Check-out Time</label>
+          <input type="time" formControlName="checkOutTime" class="form-control" />
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="showAttendanceForm = false">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="attendanceForm.invalid">Mark Attendance</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Leave Requests Section (Developer only) -->
+  <div *ngIf="canApplyLeave() && currentUser?.role === 'DEVELOPER'" class="profile-section">
+    <div class="section-header">
+      <h3>My Leave Requests</h3>
+      <button class="btn btn-primary" (click)="showLeaveForm = !showLeaveForm">
+        {{showLeaveForm ? 'Cancel' : 'Apply for Leave'}}
+      </button>
+    </div>
+
+    <form *ngIf="showLeaveForm" [formGroup]="leaveForm" (ngSubmit)="applyLeave()" class="leave-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Start Date *</label>
+          <input type="date" formControlName="startDate" class="form-control" />
+        </div>
+        <div class="form-group">
+          <label>End Date *</label>
+          <input type="date" formControlName="endDate" class="form-control" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Reason *</label>
+        <textarea formControlName="reason" class="form-control" rows="3" placeholder="Please provide reason for leave..."></textarea>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="showLeaveForm = false">Cancel</button>
+        <button type="submit" class="btn btn-primary" [disabled]="leaveForm.invalid">Apply for Leave</button>
+      </div>
+    </form>
+
+    <div class="leave-history">
+      <h4>Leave History</h4>
+      <div *ngIf="leaveRequests.length === 0" class="no-data">No leave requests found.</div>
+      <div *ngFor="let leave of leaveRequests" class="leave-item">
+        <div class="leave-info">
+          <span class="leave-dates">{{leave.startDate | date}} - {{leave.endDate | date}}</span>
+          <span class="leave-reason">{{leave.reason}}</span>
+        </div>
+        <span class="leave-status" [ngClass]="getStatusClass(leave.status)">{{leave.status}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Assigned Projects Section -->
+  <div *ngIf="canViewProjects() && employee?.project" class="profile-section">
+    <div class="section-header">
+      <h3>Assigned Project</h3>
+    </div>
+
+    <div class="project-card">
+      <h4>{{employee?.project?.name}}</h4>
+      <p>{{employee?.project?.description}}</p>
+      <div class="project-dates">
+        <span>Start: {{employee?.project?.startDate | date}}</span>
+        <span>End: {{employee?.project?.endDate | date}}</span>
+      </div>
+    </div>
+  </div>
+</div>

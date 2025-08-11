@@ -1,0 +1,74 @@
+<div class="leave-management-container">
+  <div class="page-header">
+    <h2>Leave Management</h2>
+  </div>
+
+  <div *ngIf="!canManageLeaves()" class="access-denied">
+    <h3>Access Restricted</h3>
+    <p>Only managers can access leave management functionality.</p>
+    <p>Please contact your manager for leave-related inquiries.</p>
+  </div>
+
+  <div *ngIf="canManageLeaves()">
+    <div *ngIf="loading" class="loading">Loading leave requests...</div>
+    
+    <div *ngIf="!loading && allLeaveRequests.length === 0" class="no-data">
+      No leave requests found.
+    </div>
+    
+    <div *ngIf="!loading && allLeaveRequests.length > 0" class="leave-requests-table">
+      <table class="requests-table">
+        <thead>
+          <tr>
+            <th>Employee</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+            <th>Duration</th>
+            <th>Reason</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let request of allLeaveRequests">
+            <td class="employee-info">
+              <strong>{{request.employee?.name || 'Unknown'}}</strong>
+              <br>
+              <small>{{request.employee?.designation || ''}}</small>
+            </td>
+            <td>{{request.startDate | date}}</td>
+            <td>{{request.endDate | date}}</td>
+            <td class="duration-cell">
+              {{calculateDuration(request.startDate, request.endDate)}} days
+            </td>
+            <td class="reason-cell">{{request.reason}}</td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(request.status)">
+                {{request.status}}
+              </span>
+            </td>
+            <td class="actions-cell">
+              <div *ngIf="request.status === 'PENDING'" class="action-buttons">
+                <button 
+                  class="btn btn-sm btn-success" 
+                  (click)="updateLeaveStatus(request.id!, 'APPROVED')"
+                >
+                  Approve
+                </button>
+                <button 
+                  class="btn btn-sm btn-danger" 
+                  (click)="updateLeaveStatus(request.id!, 'REJECTED')"
+                >
+                  Reject
+                </button>
+              </div>
+              <div *ngIf="request.status !== 'PENDING'" class="status-final">
+                {{request.status === 'APPROVED' ? 'Approved' : 'Rejected'}}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

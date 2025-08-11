@@ -1,0 +1,38 @@
+<nav class="navbar" *ngIf="isLoggedIn()">
+  <div class="nav-container">
+    <div class="nav-brand">
+      <h2>Employee Management System</h2>
+    </div>
+    
+    <div class="nav-links">
+      <a *ngIf="canAccessProfile()"
+         routerLink="/profile"
+         routerLinkActive="active"
+         class="nav-link">Profile</a>
+
+      <a *ngIf="canAccessEmployeeList()"
+         routerLink="/employee/list"
+         routerLinkActive="active"
+         class="nav-link">Employees</a>
+
+      <a *ngIf="canAccessProjects()"
+         routerLink="/projects"
+         routerLinkActive="active"
+         class="nav-link">Projects</a>
+
+      <a routerLink="/leave"
+         routerLinkActive="active"
+         class="nav-link">Leave Management</a>
+
+      <a *ngIf="userRole !== 'ADMIN'"
+         routerLink="/attendance"
+         routerLinkActive="active"
+         class="nav-link">Attendance</a>
+    </div>
+    
+    <div class="nav-user">
+      <span class="user-info">{{currentUser?.name}} ({{userRole}})</span>
+      <button class="logout-btn" (click)="logout()">Logout</button>
+    </div>
+  </div>
+</nav>

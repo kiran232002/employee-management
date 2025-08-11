@@ -1,0 +1,215 @@
+<div class="projects-container">
+  <div class="page-header">
+    <h2>Project Management</h2>
+    <div class="header-actions">
+      <button *ngIf="canCreateProject()" class="btn btn-primary" (click)="openCreateProject()">
+        Create New Project
+      </button>
+      <button *ngIf="canAssignProject()" class="btn btn-secondary" (click)="openAssignProject()">
+        Assign Employee to Project
+      </button>
+    </div>
+  </div>
+
+  <div class="projects-grid">
+    <div *ngFor="let project of projects" class="project-card">
+      <div class="project-header">
+        <h3>{{project.name}}</h3>
+        <span class="project-status" [class]="'status-' + project.status?.toLowerCase()">{{project.status}}</span>
+      </div>
+      
+      <p class="project-description">{{project.description}}</p>
+      
+      <div class="project-dates">
+        <div class="date-item">
+          <label>Start Date:</label>
+          <span>{{project.startDate | date}}</span>
+        </div>
+        <div class="date-item">
+          <label>End Date:</label>
+          <span>{{project.endDate | date}}</span>
+        </div>
+        <div class="date-item">
+          <label>Days Remaining:</label>
+          <span [class]="getDaysRemaining(project) < 0 ? 'overdue' : 'on-track'">
+            {{getDaysRemaining(project) < 0 ? 'Overdue by ' + Math.abs(getDaysRemaining(project)) : getDaysRemaining(project)}} days
+          </span>
+        </div>
+      </div>
+
+      <div class="project-progress">
+        <label>Project Progress:</label>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="getProjectProgress(project)"></div>
+        </div>
+        <span class="progress-text">{{getProjectProgress(project)}}%</span>
+      </div>
+      
+      <div class="assigned-employees">
+        <h4>Assigned Team Members</h4>
+        <div *ngIf="getAssignedEmployees(project.id!).length === 0" class="no-assignments">
+          No employees assigned yet
+        </div>
+        <div *ngFor="let assignment of getAssignedEmployees(project.id!)" class="employee-assignment">
+          <span class="employee-name">{{assignment.employeeName}}</span>
+          <span class="employee-role">{{assignment.role}}</span>
+        </div>
+      </div>
+
+      <div class="project-actions" *ngIf="canCreateProject()">
+        <button class="btn btn-sm btn-secondary" (click)="openUpdateProject(project)">
+          Update Project
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Project Modal -->
+  <div *ngIf="showCreateProject" class="modal-overlay" (click)="showCreateProject = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Create New Project</h3>
+        <button class="close-btn" (click)="showCreateProject = false">&times;</button>
+      </div>
+      
+      <form [formGroup]="projectForm" (ngSubmit)="createProject()" class="project-form">
+        <div class="form-group">
+          <label>Project Name *</label>
+          <input type="text" formControlName="name" class="form-control" />
+        </div>
+        
+        <div class="form-group">
+          <label>Description *</label>
+          <textarea formControlName="description" class="form-control" rows="3"></textarea>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date *</label>
+            <input type="date" formControlName="startDate" class="form-control" />
+          </div>
+          
+          <div class="form-group">
+            <label>End Date *</label>
+            <input type="date" formControlName="endDate" class="form-control" />
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Status *</label>
+          <select formControlName="status" class="form-control">
+            <option value="Active">Active</option>
+            <option value="Planning">Planning</option>
+            <option value="On Hold">On Hold</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="showCreateProject = false">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="projectForm.invalid">Create Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Assign Project Modal -->
+  <div *ngIf="showAssignProject" class="modal-overlay" (click)="showAssignProject = false">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Assign Employee to Project</h3>
+        <button class="close-btn" (click)="showAssignProject = false">&times;</button>
+      </div>
+      
+      <form [formGroup]="assignmentForm" (ngSubmit)="assignProject()" class="assignment-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Employee *</label>
+            <select formControlName="employeeId" class="form-control">
+              <option value="">Select Employee</option>
+              <option *ngFor="let emp of employees" [value]="emp.id">{{emp.name}} - {{emp.designation}}</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>Project *</label>
+            <select formControlName="projectId" class="form-control">
+              <option value="">Select Project</option>
+              <option *ngFor="let project of projects" [value]="project.id">{{project.name}}</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Role in Project *</label>
+          <input type="text" formControlName="role" class="form-control" placeholder="e.g., Frontend Developer, Backend Developer, Team Lead" />
+        </div>
+        
+        <div class="form-group">
+          <label>Assigned By</label>
+          <input type="text" formControlName="assignedBy" class="form-control" readonly />
+        </div>
+        
+        <div class="form-group">
+          <label>Remarks</label>
+          <textarea formControlName="remarks" class="form-control" rows="2" placeholder="Any additional notes..."></textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="showAssignProject = false">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="assignmentForm.invalid">Assign to Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Update Project Modal -->
+  <div *ngIf="showUpdateProject" class="modal-overlay" (click)="closeUpdateForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Update Project</h3>
+        <button class="close-btn" (click)="closeUpdateForm()">&times;</button>
+      </div>
+
+      <form [formGroup]="updateProjectForm" (ngSubmit)="updateProject()" class="project-form">
+        <div class="form-group">
+          <label>Project Name *</label>
+          <input type="text" formControlName="name" class="form-control" />
+        </div>
+
+        <div class="form-group">
+          <label>Description *</label>
+          <textarea formControlName="description" class="form-control" rows="3"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Start Date *</label>
+            <input type="date" formControlName="startDate" class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label>End Date *</label>
+            <input type="date" formControlName="endDate" class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Status *</label>
+          <select formControlName="status" class="form-control">
+            <option value="Active">Active</option>
+            <option value="Planning">Planning</option>
+            <option value="On Hold">On Hold</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeUpdateForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="updateProjectForm.invalid">Update Project</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

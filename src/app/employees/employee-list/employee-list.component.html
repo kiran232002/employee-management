@@ -1,0 +1,163 @@
+<div class="employee-list-container">
+  <div class="page-header">
+    <h2>Employee Management</h2>
+    <button 
+      *ngIf="canCreateEmployee()" 
+      class="btn btn-primary"
+      (click)="openCreateForm()"
+    >
+      Add New Employee
+    </button>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section" *ngIf="canSearchBySkill()">
+    <form [formGroup]="searchForm" class="search-form">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Search Type:</label>
+          <select formControlName="searchType" class="form-control">
+            <option value="name">Name/Email/Designation</option>
+            <option value="skill">Skills</option>
+            <option value="project">Project Assigned</option>
+          </select>
+        </div>
+        
+        <div class="form-group" *ngIf="searchForm.get('searchType')?.value !== 'project'">
+          <label>Search Value:</label>
+          <input 
+            type="text" 
+            formControlName="searchValue" 
+            class="form-control"
+            placeholder="Enter search term..."
+          />
+        </div>
+        
+        <div class="form-group" *ngIf="searchForm.get('searchType')?.value === 'project'">
+          <label>Select Project:</label>
+          <select formControlName="projectId" class="form-control">
+            <option value="">All Projects</option>
+            <option *ngFor="let project of projects" [value]="project.id">{{project.name}}</option>
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Employee Table -->
+  <div class="table-container">
+    <div *ngIf="loading" class="loading">Loading employees...</div>
+    
+    <table *ngIf="!loading" class="employee-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Designation</th>
+          <th>Department</th>
+          <th>Joining Date</th>
+          <th>Skills</th>
+          <th>Project</th>
+          <th>Status</th>
+          <th *ngIf="userRole === 'ADMIN'">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let employee of filteredEmployees">
+          <td>{{employee.name}}</td>
+          <td>{{employee.email}}</td>
+          <td>{{employee.designation}}</td>
+          <td>{{employee.department}}</td>
+          <td>{{employee.joiningDate | date}}</td>
+          <td class="skills-cell">{{employee.skills}}</td>
+          <td>{{employee.project?.name || 'Not Assigned'}}</td>
+          <td>
+            <span class="status-badge" [class.available]="!employee.project" [class.unavailable]="employee.project">
+              {{employee.project ? 'In Project' : 'Available'}}
+            </span>
+          </td>
+          <td *ngIf="userRole === 'ADMIN'" class="actions-cell">
+            <button class="btn btn-sm btn-secondary" (click)="editEmployee(employee)">Edit</button>
+            <button
+              *ngIf="canDeleteEmployee()"
+              class="btn btn-sm btn-danger"
+              (click)="deleteEmployee(employee.id!)"
+            >
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div *ngIf="!loading && filteredEmployees.length === 0" class="no-data">
+      No employees found.
+    </div>
+  </div>
+
+  <!-- Create/Edit Employee Modal -->
+  <div *ngIf="showCreateForm" class="modal-overlay" (click)="closeForm()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{editingEmployee ? 'Edit Employee' : 'Add New Employee'}}</h3>
+        <button class="close-btn" (click)="closeForm()">&times;</button>
+      </div>
+      
+      <form [formGroup]="employeeForm" (ngSubmit)="onSubmit()" class="employee-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name *</label>
+            <input type="text" formControlName="name" class="form-control" />
+            <div class="error-message" *ngIf="employeeForm.get('name')?.invalid && employeeForm.get('name')?.touched">
+              Name is required
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label>Email *</label>
+            <input type="email" formControlName="email" class="form-control" />
+            <div class="error-message" *ngIf="employeeForm.get('email')?.invalid && employeeForm.get('email')?.touched">
+              Valid email is required
+            </div>
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Designation *</label>
+            <input type="text" formControlName="designation" class="form-control" />
+          </div>
+          
+          <div class="form-group">
+            <label>Department *</label>
+            <input type="text" formControlName="department" class="form-control" />
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label>Joining Date *</label>
+            <input type="date" formControlName="joiningDate" class="form-control" />
+          </div>
+          
+          <div class="form-group">
+            <label>Available</label>
+            <input type="checkbox" formControlName="isAvailable" class="form-checkbox" />
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>Skills *</label>
+          <textarea formControlName="skills" class="form-control" rows="3" placeholder="e.g., Java, Spring Boot, Angular, MySQL"></textarea>
+        </div>
+        
+        <div class="form-actions">
+          <button type="button" class="btn btn-secondary" (click)="closeForm()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="employeeForm.invalid">
+            {{editingEmployee ? 'Update' : 'Create'}} Employee
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
