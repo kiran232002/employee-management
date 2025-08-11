@@ -10,10 +10,10 @@
     <p>Please contact your system administrator for any attendance-related queries.</p>
   </div>
 
-  <div *ngIf="userRole !== 'ADMIN'"class="attendance-content">
+  <div *ngIf="userRole !== 'ADMIN'" class="attendance-content">
 
-  <!-- Attendance Stats -->
-  <div class="attendance-stats">
+  <!-- Attendance Stats (Only for Developers) -->
+  <div *ngIf="userRole === 'DEVELOPER'" class="attendance-stats">
     <div class="stat-card present">
       <h3>{{attendanceCount.presentCount}}</h3>
       <p>Present Days</p>
@@ -25,6 +25,18 @@
     <div class="stat-card total">
       <h3>{{attendanceCount.totalCount || (attendanceCount.presentCount + attendanceCount.absentCount)}}</h3>
       <p>Total Days</p>
+    </div>
+  </div>
+
+  <!-- Manager View: Employee Attendance Reports -->
+  <div *ngIf="canViewAllReports()" class="manager-reports-section">
+    <div class="section-header">
+      <h3>Employee Attendance Reports</h3>
+      <div class="date-filter">
+        <label>Filter by Date:</label>
+        <input type="date" [(ngModel)]="selectedDate" (change)="filterByDate()" class="form-control">
+        <button type="button" (click)="selectedDate = ''; loadAllAttendanceReports()" class="btn btn-secondary">Show All</button>
+      </div>
     </div>
   </div>
 
@@ -77,18 +89,18 @@
     </div>
   </div>
 
-  <!-- Attendance History -->
-  <div class="attendance-history">
+  <!-- Developer View: Personal Attendance History -->
+  <div *ngIf="userRole === 'DEVELOPER'" class="attendance-history">
     <div class="section-header">
-      <h3>Attendance History</h3>
+      <h3>My Attendance History</h3>
     </div>
-    
+
     <div *ngIf="loading" class="loading">Loading attendance records...</div>
-    
+
     <div *ngIf="!loading && attendanceRecords.length === 0" class="no-data">
       No attendance records found.
     </div>
-    
+
     <div *ngIf="!loading && attendanceRecords.length > 0" class="records-table">
       <table class="attendance-table">
         <thead>
@@ -97,6 +109,7 @@
             <th>Status</th>
             <th>Check-in Time</th>
             <th>Check-out Time</th>
+            <th>Hours Worked</th>
           </tr>
         </thead>
         <tbody>
@@ -109,6 +122,45 @@
             </td>
             <td>{{record.checkInTime || '-'}}</td>
             <td>{{record.checkOutTime || '-'}}</td>
+            <td>{{calculateHours(record.checkInTime || '', record.checkOutTime || '')}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Manager View: All Employee Attendance Reports -->
+  <div *ngIf="canViewAllReports()" class="all-attendance-reports">
+    <div *ngIf="loading" class="loading">Loading employee attendance reports...</div>
+
+    <div *ngIf="!loading && allAttendanceReports.length === 0" class="no-data">
+      No attendance reports found for the selected criteria.
+    </div>
+
+    <div *ngIf="!loading && allAttendanceReports.length > 0" class="reports-table">
+      <table class="attendance-table">
+        <thead>
+          <tr>
+            <th>Employee ID</th>
+            <th>Date</th>
+            <th>Status</th>
+            <th>Check-in Time</th>
+            <th>Check-out Time</th>
+            <th>Hours Worked</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let report of allAttendanceReports">
+            <td><strong>{{report.employeeId}}</strong></td>
+            <td>{{report.date | date}}</td>
+            <td>
+              <span class="status-badge" [ngClass]="getStatusClass(report.status)">
+                {{report.status}}
+              </span>
+            </td>
+            <td>{{report.checkInTime || '-'}}</td>
+            <td>{{report.checkOutTime || '-'}}</td>
+            <td>{{calculateHours(report.checkInTime || '', report.checkOutTime || '')}}</td>
           </tr>
         </tbody>
       </table>
