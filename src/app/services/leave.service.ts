@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, of, throwError } from 'rxjs';
 import { delay } from 'rxjs/operators';
 import { LeaveRequest } from '../models/employee.model';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root'
@@ -48,17 +49,27 @@ export class LeaveService {
 
   private nextId = 4;
 
-  constructor() {}
+  constructor(private authService: AuthService) {}
 
   applyLeave(employeeId: number, leaveRequest: Partial<LeaveRequest>): Observable<LeaveRequest> {
+    const currentUser = this.authService.getCurrentUser();
     const newLeaveRequest = {
       id: this.nextId++,
       employeeId: employeeId,
       startDate: leaveRequest.startDate || '',
       endDate: leaveRequest.endDate || '',
       reason: leaveRequest.reason || '',
-      status: 'Pending',
-      employee: { id: employeeId, name: 'Current User', email: 'user@example.com', designation: 'Developer', department: 'IT', joiningDate: '2023-01-01', isAvailable: true, skills: 'Angular, TypeScript' }
+      status: 'PENDING',
+      employee: {
+        id: employeeId,
+        name: currentUser?.name || 'Unknown User',
+        email: currentUser?.email || 'unknown@example.com',
+        designation: 'Developer',
+        department: 'IT',
+        joiningDate: '2023-01-01',
+        isAvailable: true,
+        skills: 'Angular, TypeScript'
+      }
     };
 
     this.mockLeaveRequests.push(newLeaveRequest);
