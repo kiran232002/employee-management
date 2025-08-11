@@ -74,10 +74,10 @@ export class LeaveManagementComponent implements OnInit {
   }
 
   getStatusClass(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'approved': return 'status-approved';
-      case 'rejected': return 'status-rejected';
-      case 'pending': return 'status-pending';
+    switch (status.toUpperCase()) {
+      case 'APPROVED': return 'status-approved';
+      case 'REJECTED': return 'status-rejected';
+      case 'PENDING': return 'status-pending';
       default: return '';
     }
   }
