@@ -4,6 +4,7 @@ import { Observable, throwError, of } from 'rxjs';
 import { catchError, delay } from 'rxjs/operators';
 import { LeaveRequest } from '../models/employee.model';
 import { AuthService } from './auth.service';
+import { SafeErrorLogger } from '../utils/safe-error-logger';
 
 @Injectable({
   providedIn: 'root'
@@ -176,21 +177,13 @@ export class LeaveService {
   }
 
   private handleErrorWithFallback<T>(error: HttpErrorResponse, fallbackFn: () => Observable<T>): Observable<T> {
-    console.error('Backend API Error Details:', {
-      status: error.status,
-      statusText: error.statusText,
-      url: error.url,
-      message: error.message,
-      error: error.error
-    });
+    SafeErrorLogger.logHttpError('Leave Service API Error', error);
 
     if (error.status === 0) {
-      console.warn('🔄 Backend not available (connection failed), switching to mock data mode');
+      console.warn('🔄 Backend not available, switching to mock data mode');
       this.backendAvailable = false;
       return fallbackFn();
     } else {
-      console.error(`Backend returned code ${error.status} (${error.statusText}), URL: ${error.url}`);
-      console.error('Response body:', error.error);
       return throwError(error);
     }
   }
