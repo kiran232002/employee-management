@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ProjectService } from '../../services/project.service';
 import { EmployeeService } from '../../services/employee.service';
-import { AttendanceService } from '../../services/attendance.service';
 import { AuthService } from '../../services/auth.service';
 import { Project, Employee, ProjectAssignment } from '../../models/employee.model';
 import { SafeErrorLogger } from '../../utils/safe-error-logger';
@@ -32,7 +31,6 @@ export class ProjectListComponent implements OnInit {
     private fb: FormBuilder,
     private projectService: ProjectService,
     private employeeService: EmployeeService,
-    private attendanceService: AttendanceService,
     private authService: AuthService
   ) {
     this.projectForm = this.fb.group({
@@ -293,78 +291,45 @@ export class ProjectListComponent implements OnInit {
         return project.progress || 0;
       case 'active':
       default:
-        // For active projects, calculate based on team member attendance
-        return this.calculateAttendanceBasedProgress(project);
+        // For active projects, calculate based on time with randomization
+        return this.calculateRandomizedTimeProgress(project);
     }
   }
 
-  calculateAttendanceBasedProgress(project: Project): number {
-    if (!project.id) return 0;
+  calculateRandomizedTimeProgress(project: Project): number {
+    if (!project.startDate || !project.endDate) return 0;
 
-    // Get team members assigned to this project
-    const teamMembers = this.getAssignedEmployees(project.id);
+    const start = new Date(project.startDate).getTime();
+    const end = new Date(project.endDate).getTime();
+    const now = new Date().getTime();
 
-    if (teamMembers.length === 0) return 0;
+    if (now < start) return 0;
+    if (now > end) return 100;
 
-    // Mock attendance data - in real app this would come from attendance service
-    const mockAttendanceData = this.getMockAttendanceForProject(teamMembers);
+    // Base time progress
+    const timeProgress = ((now - start) / (end - start)) * 100;
 
-    // Calculate total present days across all team members
-    let totalPresentDays = 0;
-    teamMembers.forEach(member => {
-      const memberAttendance = mockAttendanceData.filter(attendance =>
-        attendance.employeeId === member.employeeId && attendance.status === 'Present'
-      );
-      totalPresentDays += memberAttendance.length;
-    });
+    // Add randomization based on project ID to make it consistent but varied
+    const projectSeed = project.id || 1;
+    const randomFactor = Math.sin(projectSeed * 1.234567) * 0.3; // -30% to +30% variation
 
-    // Each present day per member contributes 2% to progress
-    const progress = Math.min(totalPresentDays * 2, 100);
+    // Apply randomization
+    let finalProgress = timeProgress + (randomFactor * 100);
 
-    console.log(`Project ${project.name}: ${teamMembers.length} members, ${totalPresentDays} total present days, ${progress}% progress`);
+    // Add some team size influence if we have assignments
+    const teamMembers = this.getAssignedEmployees(project.id!);
+    if (teamMembers.length > 0) {
+      // More team members = slightly faster progress (up to 20% bonus)
+      const teamBonus = Math.min(teamMembers.length * 3, 20);
+      finalProgress += teamBonus;
+    }
 
-    return progress;
-  }
+    // Ensure progress stays within realistic bounds
+    finalProgress = Math.max(0, Math.min(100, finalProgress));
 
-  getMockAttendanceForProject(teamMembers: ProjectAssignment[]) {
-    // Mock attendance data - some members have more present days than others
-    const mockAttendance = [
-      // Employee 65 (John Doe) - good attendance
-      { employeeId: 65, date: '2024-03-01', status: 'Present' },
-      { employeeId: 65, date: '2024-03-02', status: 'Present' },
-      { employeeId: 65, date: '2024-03-03', status: 'Present' },
-      { employeeId: 65, date: '2024-03-04', status: 'Present' },
-      { employeeId: 65, date: '2024-03-05', status: 'Present' },
-      { employeeId: 65, date: '2024-03-06', status: 'Present' },
-      { employeeId: 65, date: '2024-03-07', status: 'Present' },
-      { employeeId: 65, date: '2024-03-08', status: 'Absent' },
-      { employeeId: 65, date: '2024-03-09', status: 'Present' },
+    console.log(`Project ${project.name}: Time-based progress with randomization = ${Math.round(finalProgress)}%`);
 
-      // Employee 66 (Jane Smith) - moderate attendance
-      { employeeId: 66, date: '2024-03-01', status: 'Present' },
-      { employeeId: 66, date: '2024-03-02', status: 'Absent' },
-      { employeeId: 66, date: '2024-03-03', status: 'Present' },
-      { employeeId: 66, date: '2024-03-04', status: 'Present' },
-      { employeeId: 66, date: '2024-03-05', status: 'Absent' },
-      { employeeId: 66, date: '2024-03-06', status: 'Present' },
-
-      // Employee 67 (Mike Johnson) - lower attendance
-      { employeeId: 67, date: '2024-03-01', status: 'Present' },
-      { employeeId: 67, date: '2024-03-02', status: 'Present' },
-      { employeeId: 67, date: '2024-03-03', status: 'Absent' },
-      { employeeId: 67, date: '2024-03-04', status: 'Absent' },
-
-      // Employee 68 (Sarah Wilson) - good attendance
-      { employeeId: 68, date: '2024-03-01', status: 'Present' },
-      { employeeId: 68, date: '2024-03-02', status: 'Present' },
-      { employeeId: 68, date: '2024-03-03', status: 'Present' },
-      { employeeId: 68, date: '2024-03-04', status: 'Present' },
-      { employeeId: 68, date: '2024-03-05', status: 'Present' },
-    ];
-
-    // Filter attendance for team members only
-    const memberIds = teamMembers.map(member => member.employeeId);
-    return mockAttendance.filter(attendance => memberIds.includes(attendance.employeeId));
+    return Math.round(finalProgress);
   }
 
   getDaysRemaining(project: Project): number {
