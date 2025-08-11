@@ -42,19 +42,19 @@ export class LeaveService {
   constructor() {}
 
   applyLeave(employeeId: number, leaveRequest: Partial<LeaveRequest>): Observable<LeaveRequest> {
-    const newLeaveRequest: LeaveRequest = {
+    const newLeaveRequest = {
       id: this.nextId++,
       employeeId: employeeId,
       startDate: leaveRequest.startDate || '',
       endDate: leaveRequest.endDate || '',
       reason: leaveRequest.reason || '',
       status: 'Pending',
-      appliedDate: new Date().toISOString().split('T')[0]
+      employee: { id: employeeId, name: 'Current User', email: 'user@example.com', designation: 'Developer', department: 'IT', joiningDate: '2023-01-01', isAvailable: true, skills: 'Angular, TypeScript' }
     };
 
     this.mockLeaveRequests.push(newLeaveRequest);
     console.log('Leave application submitted successfully!', newLeaveRequest);
-    
+
     return of(newLeaveRequest).pipe(delay(500));
   }
 
