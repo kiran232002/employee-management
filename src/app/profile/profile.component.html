@@ -2,9 +2,6 @@
   <div class="profile-header">
     <h2>My Profile</h2>
     <p>Welcome, {{currentUser?.name}} ({{currentUser?.role}})</p>
-    <div *ngIf="!isBackendAvailable()" class="backend-status-warning">
-      ⚠️ Using demo data - Database not connected
-    </div>
   </div>
 
   <!-- Employee Information -->
