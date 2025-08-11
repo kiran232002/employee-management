@@ -14,8 +14,8 @@ export class LeaveService {
       startDate: '2024-03-15',
       endDate: '2024-03-17',
       reason: 'Family vacation',
-      status: 'Approved',
-      employee: { id: 65, name: 'John Doe', email: 'john@example.com', designation: 'Developer', department: 'IT', joiningDate: '2023-01-01', isAvailable: true, skills: 'Angular, TypeScript' }
+      status: 'APPROVED',
+      employee: { id: 65, name: 'John Doe', email: 'john@example.com', designation: 'Senior Developer', department: 'IT', joiningDate: '2023-01-01', isAvailable: true, skills: 'Angular, TypeScript' }
     },
     {
       id: 2,
@@ -23,8 +23,8 @@ export class LeaveService {
       startDate: '2024-04-10',
       endDate: '2024-04-12',
       reason: 'Medical appointment',
-      status: 'Pending',
-      employee: { id: 65, name: 'John Doe', email: 'john@example.com', designation: 'Developer', department: 'IT', joiningDate: '2023-01-01', isAvailable: true, skills: 'Angular, TypeScript' }
+      status: 'PENDING',
+      employee: { id: 65, name: 'John Doe', email: 'john@example.com', designation: 'Senior Developer', department: 'IT', joiningDate: '2023-01-01', isAvailable: true, skills: 'Angular, TypeScript' }
     },
     {
       id: 3,
@@ -32,8 +32,17 @@ export class LeaveService {
       startDate: '2024-03-20',
       endDate: '2024-03-22',
       reason: 'Personal work',
-      status: 'Rejected',
-      employee: { id: 66, name: 'Jane Smith', email: 'jane@example.com', designation: 'Developer', department: 'IT', joiningDate: '2023-02-01', isAvailable: true, skills: 'React, JavaScript' }
+      status: 'REJECTED',
+      employee: { id: 66, name: 'Jane Smith', email: 'jane@example.com', designation: 'Frontend Developer', department: 'IT', joiningDate: '2023-02-01', isAvailable: true, skills: 'React, JavaScript' }
+    },
+    {
+      id: 4,
+      employeeId: 67,
+      startDate: '2024-05-01',
+      endDate: '2024-05-03',
+      reason: 'Wedding ceremony',
+      status: 'PENDING',
+      employee: { id: 67, name: 'Mike Johnson', email: 'mike@example.com', designation: 'Backend Developer', department: 'IT', joiningDate: '2023-03-01', isAvailable: true, skills: 'Node.js, Python' }
     }
   ];
 
