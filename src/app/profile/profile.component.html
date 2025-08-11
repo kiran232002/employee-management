@@ -13,7 +13,62 @@
       </button>
     </div>
 
-    <div *ngIf="!showEditProfile && employee" class="info-display">
+    <!-- Manager Profile Info -->
+    <div *ngIf="!showEditProfile && currentUser?.role === 'MANAGER'" class="info-display">
+      <div class="info-grid">
+        <div class="info-item">
+          <label>Name:</label>
+          <span>{{currentUser.name}}</span>
+        </div>
+        <div class="info-item">
+          <label>Email:</label>
+          <span>{{currentUser.email}}</span>
+        </div>
+        <div class="info-item">
+          <label>Designation:</label>
+          <span>Project Manager</span>
+        </div>
+        <div class="info-item">
+          <label>Department:</label>
+          <span>Management</span>
+        </div>
+        <div class="info-item">
+          <label>Joining Date:</label>
+          <span>January 15, 2022</span>
+        </div>
+        <div class="info-item">
+          <label>Employee ID:</label>
+          <span>MGR001</span>
+        </div>
+        <div class="info-item">
+          <label>Team Size:</label>
+          <span>12 Members</span>
+        </div>
+        <div class="info-item">
+          <label>Projects Managed:</label>
+          <span>8 Active Projects</span>
+        </div>
+        <div class="info-item">
+          <label>Experience:</label>
+          <span>5+ Years in Management</span>
+        </div>
+        <div class="info-item">
+          <label>Specialization:</label>
+          <span>Agile Project Management, Team Leadership, Strategic Planning</span>
+        </div>
+        <div class="info-item">
+          <label>Office Location:</label>
+          <span>Floor 3, Building A</span>
+        </div>
+        <div class="info-item">
+          <label>Contact:</label>
+          <span>+1 (555) 123-4567</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employee Profile Info -->
+    <div *ngIf="!showEditProfile && employee && currentUser?.role !== 'MANAGER'" class="info-display">
       <div class="info-grid">
         <div class="info-item">
           <label>Name:</label>
