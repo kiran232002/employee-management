@@ -48,22 +48,22 @@
               </span>
             </td>
             <td class="actions-cell">
-              <div *ngIf="request.status === 'PENDING'" class="action-buttons">
-                <button 
-                  class="btn btn-sm btn-success" 
+              <div *ngIf="request.status?.toUpperCase() === 'PENDING'" class="action-buttons">
+                <button
+                  class="btn btn-sm btn-success"
                   (click)="updateLeaveStatus(request.id!, 'APPROVED')"
                 >
                   Approve
                 </button>
-                <button 
-                  class="btn btn-sm btn-danger" 
+                <button
+                  class="btn btn-sm btn-danger"
                   (click)="updateLeaveStatus(request.id!, 'REJECTED')"
                 >
                   Reject
                 </button>
               </div>
-              <div *ngIf="request.status !== 'PENDING'" class="status-final">
-                {{request.status === 'APPROVED' ? 'Approved' : 'Rejected'}}
+              <div *ngIf="request.status?.toUpperCase() !== 'PENDING'" class="status-final">
+                {{request.status?.toUpperCase() === 'APPROVED' ? 'Approved' : request.status?.toUpperCase() === 'REJECTED' ? 'Rejected' : request.status}}
               </div>
             </td>
           </tr>
