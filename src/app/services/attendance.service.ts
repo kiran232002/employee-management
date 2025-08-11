@@ -32,6 +32,16 @@ export class AttendanceService {
       .pipe(catchError(this.handleError));
   }
 
+  getAllAttendanceReports(): Observable<AttendanceRecord[]> {
+    return this.http.get<AttendanceRecord[]>(`${this.baseUrl}/all`)
+      .pipe(catchError(this.handleError));
+  }
+
+  getAttendanceReportsByDate(date: string): Observable<AttendanceRecord[]> {
+    return this.http.get<AttendanceRecord[]>(`${this.baseUrl}/date/${date}`)
+      .pipe(catchError(this.handleError));
+  }
+
   private handleError(error: HttpErrorResponse) {
     console.error('Attendance Service Error:', error);
     if (error.status === 0) {
