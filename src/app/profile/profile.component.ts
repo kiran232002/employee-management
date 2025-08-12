@@ -6,6 +6,7 @@ import { ProjectService } from '../services/project.service';
 import { LeaveService } from '../services/leave.service';
 import { AttendanceService } from '../services/attendance.service';
 import { Employee, User, Project, LeaveRequest, AttendanceCount } from '../models/employee.model';
+import { SafeErrorLogger } from '../utils/safe-error-logger';
 
 @Component({
   selector: 'app-profile',
@@ -120,8 +121,6 @@ export class ProfileComponent implements OnInit {
         },
         error => {
           console.error('Error loading leave requests:', error);
-          console.error('Error details:', JSON.stringify(error, null, 2));
-          // Set empty array if backend is not available
           this.leaveRequests = [];
         }
       );
@@ -135,8 +134,7 @@ export class ProfileComponent implements OnInit {
           this.attendanceCount = count;
         },
         error => {
-          console.error('Error loading attendance count:', error);
-          console.error('Error details:', JSON.stringify(error, null, 2));
+          SafeErrorLogger.logHttpError('Loading attendance count in profile', error);
           // Set default values if backend is not available
           this.attendanceCount = { presentCount: 0, absentCount: 0, totalCount: 0 };
         }
@@ -181,14 +179,7 @@ export class ProfileComponent implements OnInit {
         },
         error => {
           console.error('Error applying for leave:', error);
-          console.error('Error details:', JSON.stringify(error, null, 2));
-          let errorMessage = 'Error submitting leave application. Please try again.';
-          if (error.status === 0) {
-            errorMessage = 'Cannot connect to server. Please check if the backend is running.';
-          } else if (error.error && error.error.message) {
-            errorMessage = error.error.message;
-          }
-          alert(errorMessage);
+          alert('Error submitting leave application. Please try again.');
         }
       );
     }
@@ -217,11 +208,12 @@ export class ProfileComponent implements OnInit {
   }
 
   getStatusClass(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'approved': return 'status-approved';
-      case 'rejected': return 'status-rejected';
-      case 'pending': return 'status-pending';
+    switch (status.toUpperCase()) {
+      case 'APPROVED': return 'status-approved';
+      case 'REJECTED': return 'status-rejected';
+      case 'PENDING': return 'status-pending';
       default: return '';
     }
   }
+
 }

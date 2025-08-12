@@ -3,6 +3,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { Project, ProjectAssignment } from '../models/employee.model';
+import { SafeErrorLogger } from '../utils/safe-error-logger';
 
 @Injectable({
   providedIn: 'root'
@@ -45,12 +46,7 @@ export class ProjectService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    console.error('Project Service Error:', error);
-    if (error.status === 0) {
-      console.error('Client-side error or network issue:', error.error);
-    } else {
-      console.error(`Backend returned code ${error.status}, body was:`, error.error);
-    }
+    SafeErrorLogger.logHttpError('Project Service API Error', error);
     return throwError(error);
   }
 }

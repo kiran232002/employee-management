@@ -27,6 +27,7 @@ export class LeaveManagementComponent implements OnInit {
     }
   }
 
+
   canManageLeaves(): boolean {
     return this.userRole === 'MANAGER';
   }
@@ -40,14 +41,9 @@ export class LeaveManagementComponent implements OnInit {
       },
       error => {
         console.error('Error loading leave requests:', error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
-        this.allLeaveRequests = []; // Set empty array if backend is not available
+        this.allLeaveRequests = [];
         this.loading = false;
-
-        // Show user-friendly message
-        if (error.status === 0) {
-          alert('Cannot connect to server. Please check if the backend is running.');
-        }
+        alert('Error loading leave requests. Please try again.');
       }
     );
   }
@@ -79,10 +75,10 @@ export class LeaveManagementComponent implements OnInit {
   }
 
   getStatusClass(status: string): string {
-    switch (status.toLowerCase()) {
-      case 'approved': return 'status-approved';
-      case 'rejected': return 'status-rejected';
-      case 'pending': return 'status-pending';
+    switch (status.toUpperCase()) {
+      case 'APPROVED': return 'status-approved';
+      case 'REJECTED': return 'status-rejected';
+      case 'PENDING': return 'status-pending';
       default: return '';
     }
   }

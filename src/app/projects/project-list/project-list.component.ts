@@ -4,6 +4,7 @@ import { ProjectService } from '../../services/project.service';
 import { EmployeeService } from '../../services/employee.service';
 import { AuthService } from '../../services/auth.service';
 import { Project, Employee, ProjectAssignment } from '../../models/employee.model';
+import { SafeErrorLogger } from '../../utils/safe-error-logger';
 
 @Component({
   selector: 'app-project-list',
@@ -98,8 +99,7 @@ export class ProjectListComponent implements OnInit {
         this.assignments = data;
       },
       error => {
-        console.error('Error loading assignments:', error);
-        console.error('Assignment error details:', JSON.stringify(error, null, 2));
+        SafeErrorLogger.logHttpError('Loading project assignments', error);
         // Set empty array as fallback
         this.assignments = [];
       }
@@ -291,25 +291,45 @@ export class ProjectListComponent implements OnInit {
         return project.progress || 0;
       case 'active':
       default:
-        // For active projects, calculate based on time
-        if (!project.startDate || !project.endDate) return 0;
-
-        const start = new Date(project.startDate).getTime();
-        const end = new Date(project.endDate).getTime();
-        const now = new Date().getTime();
-
-        if (now < start) return 0;
-        if (now > end) return 100;
-
-        const timeProgress = Math.round(((now - start) / (end - start)) * 100);
-
-        // Auto-complete project if it reaches 100% progress
-        if (timeProgress >= 100 && project.status !== 'Completed') {
-          this.autoCompleteProject(project);
-        }
-
-        return timeProgress;
+        // For active projects, calculate based on time with randomization
+        return this.calculateRandomizedTimeProgress(project);
     }
+  }
+
+  calculateRandomizedTimeProgress(project: Project): number {
+    if (!project.startDate || !project.endDate) return 0;
+
+    const start = new Date(project.startDate).getTime();
+    const end = new Date(project.endDate).getTime();
+    const now = new Date().getTime();
+
+    if (now < start) return 0;
+    if (now > end) return 100;
+
+    // Base time progress
+    const timeProgress = ((now - start) / (end - start)) * 100;
+
+    // Add randomization based on project ID to make it consistent but varied
+    const projectSeed = project.id || 1;
+    const randomFactor = Math.sin(projectSeed * 1.234567) * 0.3; // -30% to +30% variation
+
+    // Apply randomization
+    let finalProgress = timeProgress + (randomFactor * 100);
+
+    // Add some team size influence if we have assignments
+    const teamMembers = this.getAssignedEmployees(project.id!);
+    if (teamMembers.length > 0) {
+      // More team members = slightly faster progress (up to 20% bonus)
+      const teamBonus = Math.min(teamMembers.length * 3, 20);
+      finalProgress += teamBonus;
+    }
+
+    // Ensure progress stays within realistic bounds
+    finalProgress = Math.max(0, Math.min(100, finalProgress));
+
+    console.log(`Project ${project.name}: Time-based progress with randomization = ${Math.round(finalProgress)}%`);
+
+    return Math.round(finalProgress);
   }
 
   getDaysRemaining(project: Project): number {
